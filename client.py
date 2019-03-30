@@ -37,9 +37,51 @@ class Button:
         else:
             False
 
-def redraw_window(win, player, player1):
+def redraw_window(win, game, p):
     win.fill((128, 128, 128))
-    pass
+    if not (game.connected()):
+        font = pygame.font.SysFont('comicsans', 80)
+        text = font.render('Waiting for Player...', 1, (255, 0, 0), True)
+        win.blit(text, (width / 2 - text.get_width() / 2, height / 2 - text.get_height() / 2))
+    else:
+        font = pygame.font.SysFont("comicsans", 60)
+        text = font.render("Your Move", 1, (0, 255,255))
+        win.blit(text, (80, 200))
+
+        text = font.render("Opponents", 1, (0, 255, 255))
+        win.blit(text, (380, 200))
+
+        move1 = game.get_player_move(0)
+        move2 = game.get_player_move(1)
+        if game.bothWent():
+            text1 = font.render(move1, 1, (0,0,0))
+            text2 = font.render(move2, 1, (0, 0, 0))
+        else:
+            if game.p1Went and p == 0:
+                text1 = font.render(move1, 1, (0,0,0))
+            elif game.p1Went:
+                text1 = font.render("Locked In", 1, (0, 0, 0))
+            else:
+                text1 = font.render("Waiting...", 1, (0, 0, 0))
+
+            if game.p2Went and p == 1:
+                text2 = font.render(move2, 1, (0,0,0))
+            elif game.p2Went:
+                text2 = font.render("Locked In", 1, (0, 0, 0))
+            else:
+                text2 = font.render("Waiting...", 1, (0, 0, 0))
+
+        if p == 1:
+            win.blit(text2, (100, 350))
+            win.blit(text1, (400, 350))
+        else:
+            win.blit(text1, (100, 350))
+            win.blit(text2, (400, 350))
+
+        for btn in btns:
+            btn.draw(win)
+
+    pygame.display.update()
 
 btns = [
     Button('Rock', 50, 500, (0, 0, 0)),
@@ -51,7 +93,7 @@ def main():
     run = True
     clock = pygame.time.Clock()
     n = Network()
-    player = int(n.get_p())
+    player = n.get_p()
     print("You are player", player)
 
     #* Main game loop
@@ -93,6 +135,13 @@ def main():
                 pos = pygame.mouse.get_pos()
                 for btn in btns:
                     if btn.click(pos) and game.connected():
+                        if player == 0:
+                            if not game.p1Went:
+                                n.send(btn.text)
+                        else:
+                            if not game.p2Went:
+                                n.send(btn.text)
+        redraw_window(win, game, p)
 
 if __name__ == '__main__':
     main()

@@ -24,8 +24,6 @@ connected = set()
 games = {}
 id_count = 0
 
-players = [Player(0, 0, 50, 50, (255, 0, 0)), Player(100, 100, 50, 50, (0, 0, 255))]
-
 def threaded_client(conn, p, game_id):
     global id_count
     conn.send(str.encode(str(p)))
